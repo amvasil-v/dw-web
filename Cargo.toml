@@ -1,8 +1,8 @@
 [package]
-name = "wasm-template-rust"
+name = "dw-web"
 version = "0.1.0"
-authors = ["sn99 <siddharthn.099@gmail.com>"]
-edition = "2018"
+authors = ["amvasil-v <alex.m.vasil@gmail.com>"]
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

@@ -2,6 +2,7 @@ extern crate js_sys;
 extern crate web_sys;
 
 mod utils;
+mod counter_state;
 
 use wasm_bindgen::prelude::*;
 

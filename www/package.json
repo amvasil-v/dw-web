@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sn99/wasm-template-rust.git"
+    "url": "git+https://github.com/amvasil-v/dw-web.git"
   },
   "keywords": [
     "webassembly",
@@ -21,11 +21,11 @@
     "webpack",
     "template"
   ],
-  "author": "sn99 <siddharthn.099@gmail.com>",
+  "author": "amvasil-v <alex.m.vasil@gmail.com>",
   "license": "(MIT OR Apache-2.0)",
-  "homepage": "https://github.com/sn99/wasm-template-rust/blob/master/README.md",
+  "homepage": "https://github.com/amvasil-v/dw-web",
   "dependencies": {
-    "wasm-template-rust": "file:../pkg"
+    "dw-web": "file:../pkg"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.0",
