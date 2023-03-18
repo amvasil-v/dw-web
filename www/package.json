@@ -25,7 +25,7 @@
   "license": "(MIT OR Apache-2.0)",
   "homepage": "https://github.com/amvasil-v/dw-web",
   "dependencies": {
-    "dw-web": "file:../pkg"
+    "dw-web": "file:./pkg"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.0",
