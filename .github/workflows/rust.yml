@@ -23,6 +23,7 @@ concurrency:
 env:
   BUILD_PATH: "."
   WWW_PATH: "./www"
+  NODE_OPTIONS: --openssl-legacy-provider
 
 jobs:
   build:
