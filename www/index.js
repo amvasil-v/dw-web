@@ -1,4 +1,7 @@
 
+var hash = require('hash.js')
+document.getElementById("hash").textContent = hash.sha256().update('abc').digest('hex')
+
 import { CounterState } from 'dw-web';
 
 const counter_state = CounterState.new();
