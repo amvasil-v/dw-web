@@ -1,7 +1,7 @@
 {
-  "name": "wasm-template-rust",
+  "name": "dw-web-app",
   "version": "0.1.0",
-  "description": "A template for no npm wasm-rust and github hosting",
+  "description": "DW web application",
   "main": "index.js",
   "bin": {
     "create-wasm-app": ".bin/create-wasm-app.js"
@@ -25,7 +25,7 @@
   "license": "(MIT OR Apache-2.0)",
   "homepage": "https://github.com/amvasil-v/dw-web",
   "dependencies": {
-    "dw-web": "file:./pkg"
+    "dw-web": "file:../pkg"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.0",
