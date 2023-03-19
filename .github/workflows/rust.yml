@@ -23,7 +23,6 @@ concurrency:
 env:
   BUILD_PATH: "."
   WWW_PATH: "./www"
-  NODE_OPTIONS: --openssl-legacy-provider
 
 jobs:
   build:
@@ -43,7 +42,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "19"
+          node-version: "16"
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v3
