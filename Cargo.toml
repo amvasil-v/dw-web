@@ -3,6 +3,9 @@ name = "dw-web"
 version = "0.1.0"
 authors = ["amvasil-v <alex.m.vasil@gmail.com>"]
 edition = "2021"
+description = "German vocabulary learning game on Rust and WebAssembly"
+repository = "https://github.com/amvasil-v/dw-web"
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
