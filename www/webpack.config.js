@@ -4,8 +4,8 @@ const path = require('path');
 module.exports = {
   entry: "./bootstrap.js",
   output: {
-    path: path.resolve(__dirname, "../www"),
-    filename: "bootstrap.js",
+    path: path.resolve(__dirname, "dist"),
+    filename: "index_bundle.js",
   },
   mode: "development",
   plugins: [
