@@ -3,6 +3,7 @@ extern crate web_sys;
 
 mod utils;
 mod counter_state;
+mod fetch_words;
 
 use wasm_bindgen::prelude::*;
 
