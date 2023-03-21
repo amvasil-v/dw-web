@@ -4,9 +4,10 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub async fn fetch_words() -> Result<usize, JsError> {
     let url = "https://api.github.com/repos/amvasil-v/das_woerterbuch/contents/woerterbuch.xlsx";
+    let media = "application/vnd.github.v3.raw";
     let client = reqwest::Client::new();
     let request = client.get(url).header(
-        reqwest::header::ACCEPT, "application/vnd.github.v3.raw");
+        reqwest::header::ACCEPT, media);
 
     let body = request.send().await?.bytes().await?;
     
