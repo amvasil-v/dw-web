@@ -4,7 +4,11 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub async fn fetch_words() -> Result<usize, JsError> {
     let url = "https://api.github.com/repos/amvasil-v/das_woerterbuch/contents/woerterbuch.xlsx";
-    let body = reqwest::get(url).await?.bytes().await?;
+    let client = reqwest::Client::new();
+    let request = client.get(url).header(
+        reqwest::header::ACCEPT, "application/vnd.github.raw");
+
+    let body = request.send().await?.bytes().await?;
     
     let cursor = std::io::Cursor::new(body);
     let mut workbook = calamine::open_workbook_auto_from_rs(cursor)?;
