@@ -30,9 +30,16 @@ start_button.addEventListener("click", () => {
     for (const btn of answers) {
         btn.style.visibility = 'visible';
     }
-    fetch_words().then((res) => {
-        answer_label.textContent = res;
-    })
+    try {
+        answer_label.textContent = "Loading...";
+        fetch_words().then((res) => {
+            answer_label.textContent = "Rown in excel sheet: " + res.toString();
+        })
+    } catch (error) {
+        console.error("Failed to fetch data");
+        console.error(error);
+        answer_label.textContent = error.message;
+    }
 });
 
 next_button.addEventListener("click", () => {
