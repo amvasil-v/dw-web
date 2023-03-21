@@ -6,7 +6,7 @@ pub async fn fetch_words() -> Result<usize, JsError> {
     let url = "https://api.github.com/repos/amvasil-v/das_woerterbuch/contents/woerterbuch.xlsx";
     let client = reqwest::Client::new();
     let request = client.get(url).header(
-        reqwest::header::ACCEPT, "application/vnd.github.raw");
+        reqwest::header::ACCEPT, "application/vnd.github.v3.raw");
 
     let body = request.send().await?.bytes().await?;
     
