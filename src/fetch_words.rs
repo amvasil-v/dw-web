@@ -18,8 +18,11 @@ pub async fn fetch_words() -> Result<usize, JsError> {
 
     let response = request.send().await?;
 
-    let json_response = match response.headers().get("Accept") {
-        None => false,
+    let json_response = match response.headers().get("Content-Type") {
+        None => {
+            log::warn!("No Content-Type header");
+            false
+        }
         Some(accept) => accept.to_str()?.contains("application/json"),
     };
 
@@ -35,7 +38,9 @@ pub async fn fetch_words() -> Result<usize, JsError> {
         let parsed = json::parse(&json)?;
         let content = parsed["content"].as_str().unwrap();
         let mut binary: Vec<u8> = vec![];
-        let ext = content.split('\n').map(|s| base64::engine::general_purpose::STANDARD.decode(s).unwrap());
+        let ext = content
+            .split('\n')
+            .map(|s| base64::engine::general_purpose::STANDARD.decode(s).unwrap());
         for mut v in ext.into_iter() {
             binary.append(&mut v);
         }
