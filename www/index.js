@@ -1,6 +1,8 @@
-import { CounterState, fetch_words } from 'dw-web';
+import { CounterState, fetch_words, init } from 'dw-web';
 
 const counter_state = CounterState.new();
+
+init();
 
 const answer_names = ["button1", "button2", "button3", "button4"];
 const start_button = document.getElementById("start");

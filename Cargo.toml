@@ -20,6 +20,10 @@ js-sys = "0.3.35"
 wasm-bindgen-futures = "0.4.34"
 reqwest = "0.11.14"
 calamine = "0.19.1"
+wasm-logger = "0.2.0"
+log = "0.4.17"
+json = "0.12.4"
+base64 = "0.21.0"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.8"
