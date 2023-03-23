@@ -1,41 +1,80 @@
-import { CounterState, fetch_words, init } from 'dw-web';
+import { CounterState, init_wasm_logging, WordsGame, Exercise } from 'dw-web';
 
 const counter_state = CounterState.new();
 
-init();
+init_wasm_logging();
 
 const answer_names = ["button1", "button2", "button3", "button4"];
 const start_button = document.getElementById("start");
 const next_button = document.getElementById("next");
 const answer_label = document.getElementById("answer_label");
+const task_label = document.getElementById("task_label");
+
+var game = WordsGame.create();
+
+function set_answers_active(enabled) {
+    for (const btn of answers) {
+        btn.disabled = !enabled;
+    }
+}
 
 function answer_listener(event) {
-    event.target.classList.add("green");
-    next_button.style.visibility = 'visible';
-    for (const btn of answers) {
-        btn.disabled = true;
+    set_answers_active(false);
+    if (game.check_answer(event.target.answerNumber)) {
+        event.target.classList.add("green");
+        answer_label.textContent = "Correct!";
+    } else {
+        event.target.classList.add("red");
+        answer_label.textContent = game.get_incorrent_message();
     }
-    answer_label.textContent = "Correct!";
+    
+    next_button.style.visibility = 'visible';    
     answer_label.style.visibility = 'visible';
     counter_state.increment_counter();
 }
 
 var answers = [];
-for (const name of answer_names) {
+for (let i = 0; i < 4; i++) {
+    const name = answer_names[i];
     let button = document.getElementById(name);
     button.addEventListener("click", answer_listener);
+    button.answerNumber = i;
     answers.push(button);
 }
 
-start_button.addEventListener("click", () => {
-    start_button.style.visibility = 'hidden';
-    for (const btn of answers) {
-        btn.style.visibility = 'visible';
+function create_exercise() {
+    if (!game.create_exercise()) {
+        console.error("Failed to create an exercise");
+        return false;
     }
+    let variants = game.get_answers();
+    answer_label.textContent = "";
+    task_label.textContent = game.get_task();
+    for (let i = 0; i < 4; i++) {
+        answers[i].classList.remove("green");
+        answers[i].classList.remove("red");
+        if (i < variants.length) {
+            answers[i].textContent = variants[i];
+            answers[i].disabled = false;
+        } else {
+            answers[i].textContent = ""
+            answers[i].disabled = true;
+        }
+    }
+    return true;
+}
+
+start_button.addEventListener("click", () => {
     try {
         answer_label.textContent = "Loading...";
-        fetch_words().then((res) => {
-            answer_label.textContent = "Rown in excel sheet: " + res.toString();
+        game.fetch_words().then((res) => {
+            answer_label.textContent = "Words in vocabulary: " + res.toString();
+            if (create_exercise()) {
+                for (const btn of answers) {
+                    btn.style.visibility = 'visible';
+                }
+                start_button.style.visibility = 'hidden';
+            }
         })
     } catch (error) {
         console.error("Failed to fetch data");
@@ -45,10 +84,8 @@ start_button.addEventListener("click", () => {
 });
 
 next_button.addEventListener("click", () => {
-    for (const btn of answers) {
-        btn.classList.remove("green");
-        btn.disabled = false;
+    answer_label.style.visibility = 'hidden';
+    if (create_exercise()) {
         next_button.visibility = 'hidden';
     }
-    answer_label.style.visibility = 'hidden';
 });
