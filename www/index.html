@@ -1,30 +1,32 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Das Wörterbuch</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+    </head>
 
-<head>
-    <meta charset="utf-8">
-    <title>Das Wörterbuch</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-</head>
+    <body>
+        <script src="./index_bundle.js"></script>
+        <noscript
+            >This page contains webassembly and javascript content, please enable javascript in your browser.</noscript
+        >
+        <div class="app-container">
+            <span class="title">German Vocabulary Learning Game</span>
+            <span class="label" id="task_label">Select one answer</span>
+            <div class="btn-container choices-wrapper">
+                <button class="btn btn-answer" data-num="0">Button 1</button>
+                <button class="btn btn-answer" data-num="1">Button 2</button>
+                <button class="btn btn-answer" data-num="2">Button 3</button>
+                <button class="btn btn-answer" data-num="3">Button 4</button>
+            </div>
 
-<body>
-    <script src="./index_bundle.js"></script>
-    <noscript>This page contains webassembly and javascript content, please enable javascript in your
-        browser.</noscript>
-    <h1> German Vocabulary<br>Learning Game </h1>
-	</div>
-	<div class="label" id="task_label">Select one answer</div>
-	<div class="container">
-		<button class="answer_button" id="button1">Button 1</button>
-		<button class="answer_button" id="button2">Button 2</button>
-		<button class="answer_button" id="button3">Button 3</button>
-		<button class="answer_button" id="button4">Button 4</button>
-	</div>
-	<div class="label" id="answer_label">Press Start button</div>
-	<div class="container">
-	<button class="start_button" id="start">Start</button>
-	<button class="next_button" id="next">Next</button>
-	</div>
-</body>
-
+            <div class="label" id="answer_label">Press Start button</div>
+            <div class="btn-container controls-wrapper">
+                <button class="btn success start_button" id="start">Start</button>
+                <button class="btn warning next_button" id="next">Next</button>
+            </div>
+        </div>
+    </body>
 </html>
