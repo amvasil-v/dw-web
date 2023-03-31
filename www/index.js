@@ -28,7 +28,7 @@ const answerClickEvent = (event) => {
     counter_state.increment_counter();
 };
 
-answerButtons.forEach((btn) => btn.addEventListener('click'), answerClickEvent);
+answerButtons.forEach((btn) => btn.addEventListener('click', answerClickEvent));
 
 // Init game
 const createExercise = () => {
@@ -56,7 +56,7 @@ start_button.addEventListener('click', () => {
         answer_label.textContent = 'Loading...';
         game.fetch_words().then((res) => {
             answer_label.textContent = 'Words in vocabulary: ' + res.toString();
-            if (create_exercise()) {
+            if (createExercise()) {
                 for (const btn of answers) {
                     btn.style.visibility = 'visible';
                 }
