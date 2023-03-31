@@ -1,17 +1,17 @@
 :root {
     --backgroundColor: #f0f0f2;
-    --disabledColor: #716d6a;
-    --primaryColor: #262025;
-    --successColor: #579b58;
+    --disabledColor: #3b3b3b;
+    --primaryColor: #797979;
+    --successColor: #2d7c2e;
     --warningColor: #d48b20;
-    --dangerColor: #f44336;
+    --dangerColor: #c23228;
     --activeColor: #87cefa;
 }
 
 body {
     box-sizing: border-box;
     padding: 50px 20px;
-    font-size: 14px;
+    font-size: 20px;
     font-family: 'Idealist Sans', sans-serif;
     text-align: center;
     width: 100%;
@@ -28,7 +28,7 @@ body {
 }
 
 .title {
-    font-size: 18px;
+    font-size: 24px;
     margin-bottom: 10px;
 }
 
@@ -70,6 +70,7 @@ body {
     word-break: break-all;
     text-overflow: ellipsis;
     color: white;
+    font-size: 20px;
 }
 
 .btn:disabled {

@@ -30,6 +30,13 @@ const answerClickEvent = (event) => {
 
 answerButtons.forEach((btn) => btn.addEventListener('click', answerClickEvent));
 
+const prepareGame = () => {
+    answerButtons.forEach((btn) => btn.style.visibility = 'hidden');
+    next_button.style.visibility = 'hidden';
+}
+
+prepareGame();
+
 // Init game
 const createExercise = () => {
     if (!game.create_exercise()) {
@@ -57,7 +64,7 @@ start_button.addEventListener('click', () => {
         game.fetch_words().then((res) => {
             answer_label.textContent = 'Words in vocabulary: ' + res.toString();
             if (createExercise()) {
-                for (const btn of answers) {
+                for (const btn of answerButtons) {
                     btn.style.visibility = 'visible';
                 }
                 start_button.style.visibility = 'hidden';
@@ -72,7 +79,7 @@ start_button.addEventListener('click', () => {
 
 next_button.addEventListener('click', () => {
     answer_label.style.visibility = 'hidden';
-    if (create_exercise()) {
-        next_button.visibility = 'hidden';
+    if (createExercise()) {
+        next_button.style.visibility = 'hidden';
     }
 });
