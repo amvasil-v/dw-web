@@ -19,8 +19,8 @@ fn umlaut_normalize(word: &str) -> String {
 }
 
 pub fn check_spelling_simple(answer: &str, expected: &str) -> bool {
-    let low_ans = answer.to_lowercase();
-    let spelling = expected.to_lowercase();
+    let low_ans = answer.to_lowercase().trim().to_owned();
+    let spelling = expected.to_lowercase().trim().to_owned();
     if low_ans == spelling {
         true
     } else {

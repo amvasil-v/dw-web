@@ -1,4 +1,4 @@
-use crate::words::{Database, PartOfSpeech, Word};
+use crate::words::{check_spelling_simple, Database, PartOfSpeech, Word};
 use js_sys::ArrayBuffer;
 use rand::distributions::WeightedIndex;
 use rand::prelude::*;
@@ -194,20 +194,23 @@ impl GameResults {
 }
 
 pub struct Exercise {
+    pub ex_type: ExerciseType,
     pub task: String,
     pub answers: Vec<String>,
     pub incorrect_message: String,
     pub correct_idx: usize,
+    pub correct_spelling: String,
+}
+
+impl Exercise {
+    pub fn check_input_spelling(&self, input: &str) -> bool {
+        check_spelling_simple(input, &self.correct_spelling)
+    }
 }
 
 fn exercise_select_de(db: &Database, word: &dyn Word) -> Exercise {
     let (options, correct_idx) = fetch_word_options(db, word);
 
-    println!(
-        "Select translation to Deutsch: {} ({})",
-        word.translation(),
-        word.pos_str()
-    );
     let task = format!(
         "Select translation to Deutsch: {} ({})",
         word.translation(),
@@ -216,12 +219,38 @@ fn exercise_select_de(db: &Database, word: &dyn Word) -> Exercise {
 
     let answers: Vec<String> = options.iter().map(|w| w.spelling()).collect();
     let incorrect_message = format!("Incorrect! The word is {}", word.spelling());
+    let correct_spelling = word.spelling();
 
     Exercise {
+        ex_type: ExerciseType::SelectDe,
         task,
         answers,
         incorrect_message,
         correct_idx,
+        correct_spelling,
+    }
+}
+
+fn exercise_translate_to_de(word: &dyn Word) -> Exercise {
+    let mut task = format!(
+        "Translate to German: {} ({})",
+        word.translation(),
+        word.pos_str()
+    );
+    let help = word.get_help();
+    if !help.is_empty() {
+        task.push_str(&format!(". Hint: {}", help));
+    }
+    let correct_spelling = word.spelling();
+    let incorrect_message = format!("Incorrect! The word is {}", word.spelling());
+
+    Exercise {
+        ex_type: ExerciseType::TranslateRuDe,
+        task,
+        answers: vec![],
+        incorrect_message,
+        correct_idx: 0,
+        correct_spelling,
     }
 }
 
@@ -298,10 +327,9 @@ pub fn create_exercise_with_type(
 
     let ex = match ex_type {
         ExerciseType::SelectDe => exercise_select_de(db, word),
+        ExerciseType::TranslateRuDe => exercise_translate_to_de(word),
         _ => return None,
     };
-
-    log::info!("{}; Answers are {:?}", ex.task, ex.answers);
 
     Some(ex)
 }

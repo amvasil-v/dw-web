@@ -16,7 +16,7 @@ pub fn init_wasm_logging() {
 pub struct WordsGame {
     db: Database,
     results: GameResults,
-    exercise: Option<Exercise>
+    exercise: Option<Exercise>,
 }
 
 #[wasm_bindgen]
@@ -25,7 +25,7 @@ impl WordsGame {
         WordsGame {
             db: Database::new(),
             results: GameResults::new(),
-            exercise: None
+            exercise: None,
         }
     }
 
@@ -101,7 +101,8 @@ impl WordsGame {
     }
 
     pub fn create_exercise(&mut self) -> bool {
-        self.exercise = create_exercise_with_type(&self.db, &mut self.results, &ExerciseType::SelectDe);
+        self.exercise =
+            create_exercise_with_type(&self.db, &mut self.results, &ExerciseType::TranslateRuDe);
         self.exercise.is_some()
     }
 
@@ -110,7 +111,12 @@ impl WordsGame {
             None => return JsValue::UNDEFINED,
             Some(ex) => ex,
         };
-        return JsValue::from(ex.answers.iter().map(|x| JsValue::from_str(x)).collect::<js_sys::Array>());
+        return JsValue::from(
+            ex.answers
+                .iter()
+                .map(|x| JsValue::from_str(x))
+                .collect::<js_sys::Array>(),
+        );
     }
 
     pub fn get_task(&self) -> JsValue {
@@ -123,9 +129,7 @@ impl WordsGame {
     pub fn check_answer(&self, answer: usize) -> bool {
         match &self.exercise {
             None => false,
-            Some(ex) => {
-                ex.correct_idx == answer
-            }
+            Some(ex) => ex.correct_idx == answer,
         }
     }
 
@@ -133,6 +137,36 @@ impl WordsGame {
         match &self.exercise {
             None => JsValue::UNDEFINED,
             Some(ex) => JsValue::from_str(&ex.incorrect_message),
+        }
+    }
+
+    pub fn is_exercise_input(&self) -> bool {
+        match &self.exercise {
+            None => false,
+            Some(ex) => match ex.ex_type {
+                ExerciseType::TranslateRuDe | ExerciseType::VerbFormRandom => true,
+                _ => false,
+            },
+        }
+    }
+
+    pub fn check_answer_input(&self, answer: &str) -> bool {
+        if let Some(ex) = &self.exercise {
+            match ex.ex_type {
+                ExerciseType::TranslateRuDe | ExerciseType::VerbFormRandom => {
+                    ex.check_input_spelling(answer)
+                }
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn get_correct_spelling(&self) -> JsValue {
+        match &self.exercise {
+            None => JsValue::UNDEFINED,
+            Some(ex) => JsValue::from_str(&ex.correct_spelling),
         }
     }
 }
