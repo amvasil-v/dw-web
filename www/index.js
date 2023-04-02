@@ -14,18 +14,12 @@ const answer_input = document.getElementById('answer_input');
 
 // Init buttons
 const answerButtons = document.querySelectorAll('.btn-answer');
-const nextButtonTargets = {
-    SubmitAnswer: 0,
-    NextAction: 1,
-};
-var nextButtonTarget = nextButtonTargets.NextAction;
 const answerButtonsContainer = document.querySelector('.choices-wrapper');
 const defaultButtonsHeight = answerButtonsContainer.style.height;
 const defaultInputHeight = answer_input.style.height;
 
-answer_input.addEventListener('change', (event) => {
-    console.info("clicked enter");
-    next_button.click();
+answer_input.addEventListener('change', () => {
+    start_button.click();
 })
 
 const answerClickEvent = (event) => {
@@ -66,7 +60,7 @@ const createExerciseChoise = () => {
         btn.disabled = !variant;
         btn.style.visibility = 'visible'
     });
-    next_button.style.visibility = 'hidden';
+    start_button.style.visibility = 'hidden';
     return true;
 };
 
@@ -78,13 +72,11 @@ const createExerciseInput = () => {
     answerButtons.forEach((btn) => btn.style.visibility = 'hidden');
     answer_input.style.height = defaultInputHeight;
     answer_input.style.visibility = 'visible';
-    answerButtonsContainer.style.height = "0px";    
-
-    next_button.textContent = "Submit";
-    nextButtonTarget = nextButtonTargets.SubmitAnswer;
-    next_button.style.visibility = 'visible';
+    answerButtonsContainer.style.height = "0px";
+    
     answer_input.value = "";
     answer_input.focus();
+    start_button.style.visibility = 'visible';
 
     return true;
 };
@@ -95,50 +87,58 @@ const createExercise = () => {
         console.error('Failed to create an exercise');
         return false;
     }
+    next_button.style.visibility = 'hidden';
     if (game.is_exercise_input()) {
         return createExerciseInput();
     } else {
         return createExerciseChoise();
     }
-    
+
 }
 
-// Init Controls buttons
-start_button.addEventListener('click', () => {
+const onSubmit = () => {
+    start_button.style.visibility = 'hidden';
+    const res = game.check_answer_input(answer_input.value);
+    if (res) {
+        answer_label.textContent = game.get_correct_message();
+        answer_input.value = game.get_correct_spelling();
+        answer_input.classList.add('success');
+    } else {
+        answer_label.textContent = game.get_incorrent_message();
+        answer_input.classList.add('danger');
+    }
+
+    counter_state.increment_counter();
+    next_button.style.visibility = 'visible';
+    next_button.focus();
+}
+
+const onStart = () => {
     try {
         answer_label.textContent = 'Loading...';
         game.fetch_words().then((res) => {
             answer_label.textContent = 'Words in vocabulary: ' + res.toString();
-            if (createExercise()) {
-                start_button.style.visibility = 'hidden';
-            }
+            setupSubmitButton();
+            createExercise();
         });
     } catch (error) {
         console.error('Failed to fetch data');
         console.error(error);
         answer_label.textContent = error.message;
     }
-});
+}
 
+const setupSubmitButton = () => {
+    start_button.textContent = "Submit";
+    start_button.classList.remove('success');
+    start_button.classList.add('warning');
+    start_button.style.visibility = 'hidden';
+    start_button.removeEventListener('click', onStart);
+    start_button.addEventListener('click', onSubmit);
+}
+
+// Init Controls buttons
+start_button.addEventListener('click', onStart);
 next_button.addEventListener('click', () => {
-    if (nextButtonTarget == nextButtonTargets.NextAction) {
-        createExercise()
-    } else {
-        const res = game.check_answer_input(answer_input.value);
-        if (res) {
-            answer_label.textContent = 'Correct!';
-            answer_input.value = game.get_correct_spelling();
-            answer_input.classList.add('success');
-        } else {
-            answer_label.textContent = game.get_incorrent_message();
-            answer_input.classList.add('danger');
-        }
-
-        //answer_label.style.visibility = 'visible';
-        counter_state.increment_counter();
-        nextButtonTarget = nextButtonTargets.NextAction;
-        next_button.textContent = "Next";
-        next_button.focus();
-    }
-
+    createExercise()
 });

@@ -28,7 +28,7 @@ pub fn check_spelling_simple(answer: &str, expected: &str) -> bool {
     }
 }
 
-pub fn check_spelling_perfect(answer: &str, expected: &dyn Word) -> bool {
+pub fn check_spelling_perfect(answer: &str, expected: &str) -> bool {
     let mut frags = answer.split_whitespace();
     let first = match frags.next() {
         None => {
@@ -45,15 +45,10 @@ pub fn check_spelling_perfect(answer: &str, expected: &dyn Word) -> bool {
     if first != "hat" && first != "ist" {
         return false;
     }
-    if !expected
-        .get_verb_perfect_verb()
-        .unwrap()
-        .to_string()
-        .contains(first)
-    {
+    if !expected.contains(first) {
         return false;
     }
-    check_spelling_simple(second, expected.get_verb_perfect().unwrap())
+    check_spelling_simple(second, expected)
 }
 
 pub trait Word {

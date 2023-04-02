@@ -1,13 +1,11 @@
-use crate::words::{check_spelling_simple, Database, PartOfSpeech, Word};
-use js_sys::ArrayBuffer;
+use crate::words::*;
 use rand::distributions::WeightedIndex;
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::{cmp::Ordering, vec};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use wasm_bindgen::prelude::*;
 
 const ANSWER_OPTIONS: usize = 4;
 
@@ -193,18 +191,97 @@ impl GameResults {
     }
 }
 
-pub struct Exercise {
-    pub ex_type: ExerciseType,
-    pub task: String,
+pub struct ExerciseDataBullets {
     pub answers: Vec<String>,
-    pub incorrect_message: String,
     pub correct_idx: usize,
+}
+
+pub struct ExerciseDataArticle {
+    pub data: ExerciseDataBullets,
+    pub correct_message: String,
+}
+
+pub struct ExerciseDataInput {
     pub correct_spelling: String,
 }
 
+pub struct ExerciseDataVerbForm {
+    form: VerbFormExercise,
+    data: ExerciseDataInput,
+}
+
+pub enum ExerciseData {
+    Bullets(ExerciseDataBullets),
+    TextInput(ExerciseDataInput),
+    VerbForm(ExerciseDataVerbForm),
+    Article(ExerciseDataArticle),
+}
+
+pub struct Exercise {
+    pub ex_type: ExerciseType,
+    pub task: String,
+    pub incorrect_message: String,
+    pub data: ExerciseData,
+}
+
 impl Exercise {
-    pub fn check_input_spelling(&self, input: &str) -> bool {
-        check_spelling_simple(input, &self.correct_spelling)
+    fn check_input_spelling(&self, input: &str) -> bool {
+        if let ExerciseData::TextInput(data) = &self.data {
+            check_spelling_simple(input, &data.correct_spelling)
+        } else {
+            false
+        }
+    }
+
+    fn check_verb_form_spelling(&self, input: &str) -> bool {
+        if let ExerciseData::VerbForm(data) = &self.data {
+            let correct = &data.data.correct_spelling;
+            match data.form {
+                VerbFormExercise::Perfect => check_spelling_perfect(input, correct),
+                _ => check_spelling_simple(input, correct),
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn check_spelling(&self, input: &str) -> bool {
+        match self.data {
+            ExerciseData::TextInput(_) => self.check_input_spelling(input),
+            ExerciseData::VerbForm(_) => self.check_verb_form_spelling(input),
+            _ => false,
+        }
+    }
+
+    pub fn get_correct_spelling(&self) -> &str {
+        match &self.data {
+            ExerciseData::TextInput(data) => &data.correct_spelling,
+            ExerciseData::VerbForm(data) => &data.data.correct_spelling,
+            _ => "",
+        }
+    }
+
+    pub fn get_correct_message(&self) -> &str {
+        match &self.data {
+            ExerciseData::Article(data) => &data.correct_message,
+            _ => "Correct!",
+        }
+    }
+
+    pub fn check_answer(&self, answer: usize) -> bool {
+        match &self.data {
+            ExerciseData::Article(data) => data.data.correct_idx == answer,
+            ExerciseData::Bullets(data) => data.correct_idx == answer,
+            _ => false,
+        }
+    }
+
+    pub fn get_answers(&self) -> Option<&Vec<String>> {
+        match &self.data {
+            ExerciseData::Article(data) => Some(&data.data.answers),
+            ExerciseData::Bullets(data) => Some(&data.answers),
+            _ => None,
+        }
     }
 }
 
@@ -219,15 +296,47 @@ fn exercise_select_de(db: &Database, word: &dyn Word) -> Exercise {
 
     let answers: Vec<String> = options.iter().map(|w| w.spelling()).collect();
     let incorrect_message = format!("Incorrect! The word is {}", word.spelling());
-    let correct_spelling = word.spelling();
+    let data = ExerciseDataBullets {
+        answers,
+        correct_idx,
+    };
 
     Exercise {
         ex_type: ExerciseType::SelectDe,
         task,
-        answers,
         incorrect_message,
+        data: ExerciseData::Bullets(data),
+    }
+}
+
+fn exercise_select_ru(db: &Database, word: &dyn Word) -> Exercise {
+    let (options, correct_idx) = fetch_word_options(db, word);
+
+    println!(
+        "Select translation to Russian: {} ({})",
+        word.spelling(),
+        word.pos_str()
+    );
+
+    let task = format!(
+        "Select translation to Russian: {} ({})",
+        word.spelling(),
+        word.pos_str()
+    );
+
+    let answers: Vec<String> = options.iter().map(|w| w.translation().to_owned()).collect();
+    let incorrect_message = format!("Incorrect! The tranlation is {}", word.translation());
+    let correct_spelling = word.translation().to_owned();
+    let data = ExerciseDataBullets {
+        answers,
         correct_idx,
-        correct_spelling,
+    };
+
+    Exercise {
+        ex_type: ExerciseType::SelectRu,
+        task,
+        incorrect_message,
+        data: ExerciseData::Bullets(data),
     }
 }
 
@@ -247,11 +356,86 @@ fn exercise_translate_to_de(word: &dyn Word) -> Exercise {
     Exercise {
         ex_type: ExerciseType::TranslateRuDe,
         task,
-        answers: vec![],
         incorrect_message,
-        correct_idx: 0,
-        correct_spelling,
+        data: ExerciseData::TextInput(ExerciseDataInput { correct_spelling }),
     }
+}
+
+fn exercise_guess_noun_article(word: &dyn Word) -> Exercise {
+    let task = format!(
+        "Select the correct article for the noun: {}",
+        capitalize_noun(word.get_word())
+    );
+
+    let answers: Vec<String> = NounArticle::iter().map(|a| a.answer_bullet_str()).collect();
+    let incorrect_message = format!(
+        "Incorrect! The article is {} - {}",
+        word.spelling(),
+        word.translation()
+    );
+
+    let correct_idx = answers
+        .iter()
+        .enumerate()
+        .find_map(|(i, x)| {
+            if x == &word.get_article().unwrap().answer_bullet_str() {
+                Some(i)
+            } else {
+                None
+            }
+        })
+        .unwrap();
+    let data = ExerciseDataArticle {
+        data: ExerciseDataBullets {
+            answers,
+            correct_idx,
+        },
+        correct_message: format!("Correct! {} - {}", word.spelling(), word.translation()),
+    };
+
+    Exercise {
+        ex_type: ExerciseType::GuessNounArticle,
+        task,
+        incorrect_message,
+        data: ExerciseData::Article(data),
+    }
+}
+
+fn exercise_verb_form(word: &dyn Word, form: VerbFormExercise) -> Exercise {
+    let task = format!(
+        "{} [ {} - {} ]",
+        match form {
+            VerbFormExercise::PresentThird => "Add verb in present tense: Er ... jetzt",
+            VerbFormExercise::Praeteritum => "Add verb in Präteritum : Er ... einst",
+            VerbFormExercise::Perfect => "Add verb in Perfekt : Er ... ... gestern",
+        },
+        word.get_word(),
+        word.translation()
+    );
+
+    let correct_spelling = match form {
+        VerbFormExercise::PresentThird => word.get_verb_present_third().unwrap().to_owned(),
+        VerbFormExercise::Praeteritum => word.get_verb_praeteritum().unwrap().to_owned(),
+        VerbFormExercise::Perfect => word.get_verb_perfect_full().unwrap(),
+    };
+    let incorrect_message = format!("Incorrect! The form is {}", correct_spelling);
+    let data = ExerciseDataVerbForm {
+        data: ExerciseDataInput { correct_spelling },
+        form,
+    };
+
+    Exercise {
+        ex_type: ExerciseType::VerbFormRandom,
+        task,
+        incorrect_message,
+        data: ExerciseData::VerbForm(data),
+    }
+}
+
+pub fn exercise_verb_form_random(word: &dyn Word) -> Exercise {
+    let mut rng = rand::thread_rng();
+    let form = VerbFormExercise::iter().choose(&mut rng).unwrap();
+    exercise_verb_form(word, form)
 }
 
 fn fetch_word_options<'a>(db: &'a Database, word: &'a dyn Word) -> (Vec<&'a dyn Word>, usize) {
@@ -328,6 +512,9 @@ pub fn create_exercise_with_type(
     let ex = match ex_type {
         ExerciseType::SelectDe => exercise_select_de(db, word),
         ExerciseType::TranslateRuDe => exercise_translate_to_de(word),
+        ExerciseType::SelectRu => exercise_select_ru(db, word),
+        ExerciseType::GuessNounArticle => exercise_guess_noun_article(word),
+        ExerciseType::VerbFormRandom => exercise_verb_form_random(word),
         _ => return None,
     };
 

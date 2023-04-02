@@ -3,7 +3,6 @@ use calamine::Reader;
 use core::panic;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
-use strum::IntoEnumIterator;
 
 use crate::exercise::*;
 use crate::words::*;
@@ -23,7 +22,7 @@ pub struct WordsGame {
     exercise_type: ExerciseType,
 }
 
-const EXERCISE_SAME_TYPE_COUNT: usize = 1;
+const EXERCISE_SAME_TYPE_COUNT: usize = 10;
 
 #[wasm_bindgen]
 impl WordsGame {
@@ -108,9 +107,8 @@ impl WordsGame {
         Ok(self.db.words.keys().count())
     }
 
-    pub fn create_exercise(&mut self) -> bool {     
-        self.exercise =
-            create_exercise_with_type(&self.db, &mut self.results, &self.exercise_type);
+    pub fn create_exercise(&mut self) -> bool {
+        self.exercise = create_exercise_with_type(&self.db, &mut self.results, &self.exercise_type);
 
         if self.exercise.is_some() {
             self.exercise_number += 1;
@@ -118,10 +116,13 @@ impl WordsGame {
                 self.exercise_number = 0;
                 self.exercise_type = match self.exercise_type {
                     ExerciseType::SelectDe => ExerciseType::TranslateRuDe,
+                    ExerciseType::TranslateRuDe => ExerciseType::SelectRu,
+                    ExerciseType::SelectRu => ExerciseType::GuessNounArticle,
+                    ExerciseType::GuessNounArticle => ExerciseType::VerbFormRandom,
                     _ => ExerciseType::SelectDe,
                 };
             }
-        }        
+        }
         self.exercise.is_some()
     }
 
@@ -130,8 +131,14 @@ impl WordsGame {
             None => return JsValue::UNDEFINED,
             Some(ex) => ex,
         };
+
+        let answers = match ex.get_answers() {
+            Some(a) => a,
+            _ => return JsValue::UNDEFINED,
+        };
+
         return JsValue::from(
-            ex.answers
+            answers
                 .iter()
                 .map(|x| JsValue::from_str(x))
                 .collect::<js_sys::Array>(),
@@ -148,7 +155,7 @@ impl WordsGame {
     pub fn check_answer(&self, answer: usize) -> bool {
         match &self.exercise {
             None => false,
-            Some(ex) => ex.correct_idx == answer,
+            Some(ex) => ex.check_answer(answer)
         }
     }
 
@@ -171,12 +178,7 @@ impl WordsGame {
 
     pub fn check_answer_input(&self, answer: &str) -> bool {
         if let Some(ex) = &self.exercise {
-            match ex.ex_type {
-                ExerciseType::TranslateRuDe | ExerciseType::VerbFormRandom => {
-                    ex.check_input_spelling(answer)
-                }
-                _ => false,
-            }
+            ex.check_spelling(answer)
         } else {
             false
         }
@@ -185,7 +187,18 @@ impl WordsGame {
     pub fn get_correct_spelling(&self) -> JsValue {
         match &self.exercise {
             None => JsValue::UNDEFINED,
-            Some(ex) => JsValue::from_str(&ex.correct_spelling),
+            Some(ex) => JsValue::from_str(
+                &ex.get_correct_spelling()
+            ),
+        }
+    }
+
+    pub fn get_correct_message(&self) -> JsValue {
+        match &self.exercise {
+            None => JsValue::UNDEFINED,
+            Some(ex) => JsValue::from_str(
+                &ex.get_correct_message()
+            ),
         }
     }
 }
