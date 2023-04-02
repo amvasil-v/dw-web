@@ -326,7 +326,6 @@ fn exercise_select_ru(db: &Database, word: &dyn Word) -> Exercise {
 
     let answers: Vec<String> = options.iter().map(|w| w.translation().to_owned()).collect();
     let incorrect_message = format!("Incorrect! The tranlation is {}", word.translation());
-    let correct_spelling = word.translation().to_owned();
     let data = ExerciseDataBullets {
         answers,
         correct_idx,

@@ -25,7 +25,7 @@ answer_input.addEventListener('change', () => {
 const answerClickEvent = (event) => {
     if (game.check_answer(Number(event.target.dataset.num))) {
         event.target.classList.add('success');
-        answer_label.textContent = 'Correct!';
+        answer_label.textContent = game.get_correct_message();
     } else {
         event.target.classList.add('danger');
         answer_label.textContent = game.get_incorrent_message();
