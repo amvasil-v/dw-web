@@ -19,6 +19,14 @@ const nextButtonTargets = {
     NextAction: 1,
 };
 var nextButtonTarget = nextButtonTargets.NextAction;
+const answerButtonsContainer = document.querySelector('.choices-wrapper');
+const defaultButtonsHeight = answerButtonsContainer.style.height;
+const defaultInputHeight = answer_input.style.height;
+
+answer_input.addEventListener('change', (event) => {
+    console.info("clicked enter");
+    next_button.click();
+})
 
 const answerClickEvent = (event) => {
     if (game.check_answer(Number(event.target.dataset.num))) {
@@ -30,7 +38,6 @@ const answerClickEvent = (event) => {
     }
 
     next_button.style.visibility = 'visible';
-    answer_label.style.visibility = 'visible';
     counter_state.increment_counter();
 };
 
@@ -45,14 +52,12 @@ const prepareGame = () => {
 prepareGame();
 
 const createExerciseChoise = () => {
-    if (!game.create_exercise()) {
-        console.error('Failed to create an exercise');
-        return false;
-    }
     answer_input.style.visibility = 'hidden';
+    answer_input.style.height = "0px";
     const variants = game.get_answers();
-    answer_label.textContent = '';
+    answer_label.textContent = "Select one answer";
     task_label.textContent = game.get_task();
+    answerButtonsContainer.style.height = defaultButtonsHeight;
     answerButtons.forEach((btn) => {
         btn.classList.remove('success', 'danger');
         const num = Number(btn.dataset.num);
@@ -67,16 +72,19 @@ const createExerciseChoise = () => {
 
 const createExerciseInput = () => {
     answer_input.classList.remove('success', 'danger')
-    answer_label.textContent = '';
+    answer_label.textContent = "Type in the answer. ß=ss, ö=oe etc.";
     task_label.textContent = game.get_task();
 
     answerButtons.forEach((btn) => btn.style.visibility = 'hidden');
+    answer_input.style.height = defaultInputHeight;
     answer_input.style.visibility = 'visible';
+    answerButtonsContainer.style.height = "0px";    
 
     next_button.textContent = "Submit";
     nextButtonTarget = nextButtonTargets.SubmitAnswer;
     next_button.style.visibility = 'visible';
     answer_input.value = "";
+    answer_input.focus();
 
     return true;
 };
@@ -87,7 +95,12 @@ const createExercise = () => {
         console.error('Failed to create an exercise');
         return false;
     }
-    return createExerciseInput()
+    if (game.is_exercise_input()) {
+        return createExerciseInput();
+    } else {
+        return createExerciseChoise();
+    }
+    
 }
 
 // Init Controls buttons
@@ -109,7 +122,6 @@ start_button.addEventListener('click', () => {
 
 next_button.addEventListener('click', () => {
     if (nextButtonTarget == nextButtonTargets.NextAction) {
-        answer_label.style.visibility = 'hidden';
         createExercise()
     } else {
         const res = game.check_answer_input(answer_input.value);
@@ -122,10 +134,11 @@ next_button.addEventListener('click', () => {
             answer_input.classList.add('danger');
         }
 
-        answer_label.style.visibility = 'visible';
+        //answer_label.style.visibility = 'visible';
         counter_state.increment_counter();
         nextButtonTarget = nextButtonTargets.NextAction;
         next_button.textContent = "Next";
+        next_button.focus();
     }
 
 });

@@ -52,7 +52,7 @@ body {
 }
 
 .choices-wrapper {
-    height: 200px;
+    height: 150px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: repeat(2, minmax(0, 1fr));
@@ -77,7 +77,7 @@ body {
 
 .txt-input {
     font-size: 18px;
-    width: 100%;
+    width: 90%;
     padding: 10px 20px;
     margin: 20px 0;
     border: 1px solid;

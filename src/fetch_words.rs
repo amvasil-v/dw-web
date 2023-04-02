@@ -3,6 +3,7 @@ use calamine::Reader;
 use core::panic;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
+use strum::IntoEnumIterator;
 
 use crate::exercise::*;
 use crate::words::*;
@@ -17,7 +18,12 @@ pub struct WordsGame {
     db: Database,
     results: GameResults,
     exercise: Option<Exercise>,
+
+    exercise_number: usize,
+    exercise_type: ExerciseType,
 }
+
+const EXERCISE_SAME_TYPE_COUNT: usize = 1;
 
 #[wasm_bindgen]
 impl WordsGame {
@@ -26,6 +32,8 @@ impl WordsGame {
             db: Database::new(),
             results: GameResults::new(),
             exercise: None,
+            exercise_number: 0,
+            exercise_type: ExerciseType::SelectDe,
         }
     }
 
@@ -100,9 +108,20 @@ impl WordsGame {
         Ok(self.db.words.keys().count())
     }
 
-    pub fn create_exercise(&mut self) -> bool {
+    pub fn create_exercise(&mut self) -> bool {     
         self.exercise =
-            create_exercise_with_type(&self.db, &mut self.results, &ExerciseType::TranslateRuDe);
+            create_exercise_with_type(&self.db, &mut self.results, &self.exercise_type);
+
+        if self.exercise.is_some() {
+            self.exercise_number += 1;
+            if self.exercise_number == EXERCISE_SAME_TYPE_COUNT {
+                self.exercise_number = 0;
+                self.exercise_type = match self.exercise_type {
+                    ExerciseType::SelectDe => ExerciseType::TranslateRuDe,
+                    _ => ExerciseType::SelectDe,
+                };
+            }
+        }        
         self.exercise.is_some()
     }
 

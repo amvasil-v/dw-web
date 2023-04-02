@@ -12,7 +12,7 @@ use wasm_bindgen::prelude::*;
 const ANSWER_OPTIONS: usize = 4;
 
 #[allow(unused)]
-#[derive(EnumIter)]
+#[derive(EnumIter, Debug)]
 pub enum ExerciseType {
     SelectDe,
     TranslateRuDe,
